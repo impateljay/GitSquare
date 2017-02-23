@@ -42,12 +42,12 @@ public class Contributor {
     @SerializedName("site_admin")
     private boolean siteAdmin;
     @SerializedName("contributions")
-    private long contributions;
+    private int contributions;
 
     public Contributor() {
     }
 
-    public Contributor(String login, long id, String avatarUrl, String gravatarId, String url, String htmlUrl, String followersUrl, String followingUrl, String gistsUrl, String starredUrl, String subscriptionsUrl, String organizationsUrl, String reposUrl, String eventsUrl, String receivedEventsUrl, String type, boolean siteAdmin, long contributions) {
+    public Contributor(String login, long id, String avatarUrl, String gravatarId, String url, String htmlUrl, String followersUrl, String followingUrl, String gistsUrl, String starredUrl, String subscriptionsUrl, String organizationsUrl, String reposUrl, String eventsUrl, String receivedEventsUrl, String type, boolean siteAdmin, int contributions) {
         this.login = login;
         this.id = id;
         this.avatarUrl = avatarUrl;
@@ -204,11 +204,11 @@ public class Contributor {
         this.siteAdmin = siteAdmin;
     }
 
-    public long getContributions() {
+    public int getContributions() {
         return contributions;
     }
 
-    public void setContributions(long contributions) {
+    public void setContributions(int contributions) {
         this.contributions = contributions;
     }
 }

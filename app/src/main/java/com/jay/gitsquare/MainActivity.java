@@ -1,14 +1,18 @@
 package com.jay.gitsquare;
 
+import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -22,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ContributorsAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private Button filterContributionsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setTitle(getString(R.string.activity_title));
         db = new DatabaseHandler(this);
 
+        filterContributionsButton = (Button) findViewById(R.id.button_filter_contriburions);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mAdapter = new ContributorsAdapter(contributors);
@@ -56,6 +62,19 @@ public class MainActivity extends AppCompatActivity {
                 downloadContributors();
                 mAdapter.notifyDataSetChanged();
                 mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        filterContributionsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Collections.sort(contributors, new Comparator<Contributor>() {
+                    @Override
+                    public int compare(Contributor o1, Contributor o2) {
+                        return Integer.valueOf(o1.getContributions()).compareTo(o2.getContributions());
+                    }
+                });
+                mAdapter.notifyDataSetChanged();
             }
         });
     }
