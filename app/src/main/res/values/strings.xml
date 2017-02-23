@@ -3,4 +3,5 @@
     <string name="contributed_repos"><u>Contributed Repos</u></string>
     <string name="filter_contributions">Filter contributions</string>
     <string name="activity_title">Square Contribs</string>
+    <string name="no_internet">Please check your internet connection and try again.</string>
 </resources>

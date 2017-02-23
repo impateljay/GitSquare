@@ -1,10 +1,16 @@
 package com.jay.gitsquare;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
@@ -17,16 +23,29 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ContributorsAdapter extends RecyclerView.Adapter<ContributorsAdapter.MyViewHolder> {
 
     private List<Contributor> contributorList;
+    private Context context;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView loginName, contributions;
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        public TextView loginName, contributions, contributedRepos;
         public CircleImageView avatar;
 
         public MyViewHolder(View view) {
             super(view);
+            context = view.getContext();
             loginName = (TextView) view.findViewById(R.id.txt_login_name);
+            contributedRepos = (TextView) view.findViewById(R.id.txt_contributed_repos);
             contributions = (TextView) view.findViewById(R.id.txt_contributions);
             avatar = (CircleImageView) view.findViewById(R.id.avatar_image);
+            contributedRepos.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (v.getId() == contributedRepos.getId()) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(contributorList.get(getAdapterPosition()).getReposUrl()));
+                context.startActivity(i);
+            }
         }
     }
 
@@ -45,7 +64,11 @@ public class ContributorsAdapter extends RecyclerView.Adapter<ContributorsAdapte
         Contributor contributor = contributorList.get(position);
         holder.loginName.setText(contributor.getLogin());
         holder.contributions.setText("Contributions : " + contributor.getContributions());
-        holder.avatar.setImageResource(R.drawable.image);
+        Glide.with(context).load(contributor.getAvatarUrl())
+                .thumbnail(0.5f)
+                .crossFade()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.avatar);
     }
 
     @Override

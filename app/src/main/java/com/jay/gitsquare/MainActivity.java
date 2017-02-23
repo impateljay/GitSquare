@@ -1,5 +1,8 @@
 package com.jay.gitsquare;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -45,23 +48,22 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
 
-        if(db.getContactsCount() <= 0) {
+        if (isNetworkAvailable()) {
             downloadContributors();
             mAdapter.notifyDataSetChanged();
-        }
-        else {
-            for(Contributor contributor : db.getAllContributors()){
-                contributors.add(contributor);
-                mAdapter.notifyDataSetChanged();
-            }
+        } else {
+            Toast.makeText(MainActivity.this, R.string.no_internet, Toast.LENGTH_LONG).show();
         }
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                downloadContributors();
-                mAdapter.notifyDataSetChanged();
-                mSwipeRefreshLayout.setRefreshing(false);
+                if (isNetworkAvailable()) {
+                    downloadContributors();
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.no_internet, Toast.LENGTH_LONG).show();
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
             }
         });
 
@@ -88,9 +90,9 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<List<Contributor>>call, Response<List<Contributor>> response) {
                 for (Contributor cn : response.body()) {
                     contributors.add(cn);
-                    db.addContributor(new Contributor(cn.getLogin(),cn.getId(), cn.getAvatarUrl(),cn.getGravatarId(),cn.getUrl(),cn.getHtmlUrl(),cn.getFollowersUrl(),cn.getFollowingUrl(),cn.getGistsUrl(), cn.getStarredUrl(),cn.getSubscriptionsUrl(),cn.getOrganizationsUrl(),cn.getReposUrl(),cn.getEventsUrl(),cn.getReceivedEventsUrl(),cn.getType(),cn.isSiteAdmin(),cn.getContributions()));
                     mAdapter.notifyDataSetChanged();
                 }
+                mSwipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
@@ -98,5 +100,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Error while downloading data!",Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
