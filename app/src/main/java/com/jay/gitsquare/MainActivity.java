@@ -3,6 +3,7 @@ package com.jay.gitsquare;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
 
         if (isNetworkAvailable()) {
-            downloadContributors();
+            new DownloadContributors().execute();
             mAdapter.notifyDataSetChanged();
         } else {
             Toast.makeText(MainActivity.this, R.string.no_internet, Toast.LENGTH_LONG).show();
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 if (isNetworkAvailable()) {
-                    downloadContributors();
+                    new DownloadContributors().execute();
                 } else {
                     Toast.makeText(MainActivity.this, R.string.no_internet, Toast.LENGTH_LONG).show();
                     mSwipeRefreshLayout.setRefreshing(false);
@@ -81,30 +82,36 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void downloadContributors() {
-        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
-
-        Call<List<Contributor>> call = apiService.getContributors();
-        call.enqueue(new Callback<List<Contributor>>() {
-            @Override
-            public void onResponse(Call<List<Contributor>>call, Response<List<Contributor>> response) {
-                for (Contributor cn : response.body()) {
-                    contributors.add(cn);
-                    mAdapter.notifyDataSetChanged();
-                }
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-
-            @Override
-            public void onFailure(Call<List<Contributor>>call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Error while downloading data!",Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private class DownloadContributors extends AsyncTask<Object, Object, Void> {
+
+        @Override
+        protected Void doInBackground(Object... params) {
+            ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+
+            Call<List<Contributor>> call = apiService.getContributors();
+            call.enqueue(new Callback<List<Contributor>>() {
+                @Override
+                public void onResponse(Call<List<Contributor>> call, Response<List<Contributor>> response) {
+                    contributors.clear();
+                    for (Contributor cn : response.body()) {
+                        contributors.add(cn);
+                        mAdapter.notifyDataSetChanged();
+                    }
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+
+                @Override
+                public void onFailure(Call<List<Contributor>> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Error while downloading data!", Toast.LENGTH_LONG).show();
+                }
+            });
+            return null;
+        }
     }
 }
